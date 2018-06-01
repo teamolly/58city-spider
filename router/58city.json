@@ -1,0 +1,29 @@
+{
+  "name": "Spider",
+  "info": [
+    {
+      "name": "local-service",
+      "type": "mysql",
+      "param": {
+        "host": "localhost",
+        "user": "root",
+        "password": "root",
+        "database": "test"
+      },
+      "enabled": true
+    },
+    {
+      "name": "ganji",
+      "type": "script",
+      "param": {
+        "path": "proxy.init",
+        "param": "billy"
+      },
+      "module": {
+        "ganji": "./module/58city.js"
+      },
+      "enabled": true
+    }
+  ],
+  "param": {}
+}
