@@ -25,13 +25,7 @@ module.exports = class {
 	}
 
 	init($data, $succcess, $error, $client) {
-		//		event.addListener("PROXYINITED", () =>
-		//		{
-		// 		var targetPath = g.path.resolve(__projpath('./assets/result.json'));
-		// 		var content = g.fs.readFileSync(targetPath).toString();
-		// 		this.data = typeof content == "object" ? content : JSON.parse(content);
 		this.toNextPage();
-		//		})
 		process.on("exit", () => {
 			trace("爬取结束，即将退出程序==============");
 		})
