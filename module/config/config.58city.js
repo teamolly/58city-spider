@@ -9,15 +9,16 @@ module.exports = {
 		"Cache-Control": "no-cache",
 		"Connection": "keep-alive",
 		"Pragma": "no-cache",
-		"Upgrade-Insecure-Requests": 1,
+		"Referer": "http://hz.58.com/",
 		"secureProtocol": "TLSv1_method",
+		"Host": "hz.58.com",
 		"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36"
 	},
-	cookie:"",
+	cookie: "",
 	client: "http://hz.58.com/chuzu/",
 	server: "http://hz.58.com/chuzu/",
 	pagePrefix: "pn",
-	timeDelay: Math.random() * (5000) + 10000
+	timeDelay: Math.random() * (5000) + 15000
 }
 
 

@@ -8,43 +8,35 @@ require('superagent-proxy')(superagent);
 var config = require('./../config/config.58city.js');
 var _cookie = "";
 
-function post($url, $params, $success, $error)
-{
+function post($url, $params, $success, $error) {
 	$params.cookie = $params.cookie || "";
-	if ($params.cookie)
-	{
+	if ($params.cookie) {
 		config.cookie = $params.cookie;
 	}
-	if ($url.indexOf("http") >= 0)
-	{
-		config.server = "";
+	if ($url.indexOf("http") < 0) {
+		$url = config.server + $url;
 	}
-
-	var promise = new Promise((resolved, rejected) =>
-	{
+	var promise = new Promise((resolved, rejected) => {
 		superagent
-			.post(config.server + $url)
+			.post($url)
 			.set(config.header)
 			.set("Cookie", _cookie)
 			.type("form")
 			.send($params)
-			.on('error', (err) =>
-			{
-				if (err)
-				{
+			.on('error', (err) => {
+				if (err) {
+					throw err;
 					rejected(err);
 					return;
 				}
 			})
-			.end((err, res) =>
-			{
-				if (err)
-				{
+			.end((err, res) => {
+				if (err) {
+					throw err;
 					rejected(err);
 					return;
 				}
-				if (res.headers["set-cookie"] && res.headers["set-cookie"][0])
-				{
+				if (res.headers["set-cookie"] && res.headers["set-cookie"][0]) {
 					_cookie = res.headers["set-cookie"][0];
 				}
 				$success && $success();
@@ -55,35 +47,31 @@ function post($url, $params, $success, $error)
 	return promise;
 }
 
-function get($url, $params, $success, $error)
-{
-	if ($url.indexOf("http") >= 0)
-	{
-		config.server = "";
+function get($url, $params, $success, $error) {
+	trace("before=========$url", $url);
+	if ($url.indexOf("http") < 0) {
+		$url = config.server + $url;
 	}
-	if ($params.cookie)
-	{
+	if ($params.cookie) {
 		config.cookie = $params.cookie;
 	}
-	var promise = new Promise((resolved, rejected) =>
-	{
+	var promise = new Promise((resolved, rejected) => {
+		trace("after========$url",$url);
 		superagent
-			.get(config.server + $url)
+			.get($url)
 			.set(config.header)
 			.set("Cookie", config.cookie)
 			.send($params)
-			.on('error', (err) =>
-			{
-				if (err)
-				{
+			.on('error', (err) => {
+				if (err) {
+					throw err;
 					rejected(err);
 					return;
 				}
 			})
-			.end((err, res) =>
-			{
-				if (err)
-				{
+			.end((err, res) => {
+				if (err) {
+					throw err;
 					rejected(err);
 					return;
 				}

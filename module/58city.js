@@ -17,54 +17,46 @@ var _currLink = "";
 var _timer = null;
 
 module.exports = class {
-	constructor()
-	{
+	constructor() {
 		_sql = g.data.manager.getManager('local-service');
 		_file.add(__projpath("./module/sql/58city"))
 		this.add('init', this.init);
 		this.data = [];
 	}
 
-	init($data, $succcess, $error, $client)
-	{
-//		event.addListener("PROXYINITED", () =>
-//		{
-// 		var targetPath = g.path.resolve(__projpath('./assets/result.json'));
-// 		var content = g.fs.readFileSync(targetPath).toString();
-// 		this.data = typeof content == "object" ? content : JSON.parse(content);
+	init($data, $succcess, $error, $client) {
+		//		event.addListener("PROXYINITED", () =>
+		//		{
+		// 		var targetPath = g.path.resolve(__projpath('./assets/result.json'));
+		// 		var content = g.fs.readFileSync(targetPath).toString();
+		// 		this.data = typeof content == "object" ? content : JSON.parse(content);
 		this.toNextPage();
-//		})
-		process.on("exit", () =>
-		{
+		//		})
+		process.on("exit", () => {
 			trace("爬取结束，即将退出程序==============");
 		})
 	}
 
-	afterLogin($url, $callback)
-	{
+	afterLogin($url, $callback) {
 		trace("this.page", _nextPage);
-		superagent.get($url, {cookie: _cookie}).then(($data) =>
-		{
+		superagent.get($url, {
+			cookie: _cookie
+		}).then(($data) => {
 			_cookie = $data.header["set-cookie"];
-			if ($data.text)
-			{
+			if ($data.text) {
 				$ = cheerio.load($data.text);
 				this.resolveData($, $callback);
-			}
-			else
-			{
+			} else {
 				g.log.out($data);
 				process.exit();
 			}
-		}, (err) =>
-		{
+		}, (err) => {
 			g.log.out(err);
 			this.afterLogin($url, $callback)
 		})
 	}
 
-	resolveData($, $callback)
-	{
+	resolveData($, $callback) {
 		var list = [];
 		var nodes = $("div.listBox > ul.listUl > li");
 		var nodeList = util.convertArray(nodes);
@@ -72,71 +64,53 @@ module.exports = class {
 		var self = this;
 		crawlLink();
 
-		function crawlLink()
-		{
-			if (nodeList.length > 1)
-			{
-				node = nodeList.shift();
-				var url = $(node).find("div.img_list > a").attr("href");
-				var index = url.indexOf(".shtml")
-				if (index > 0)
-				{
-					var link = url.slice(0, index + 6);
-					_currLink = link;
-					trace("link",link)
-					superagent.get(link, {cookie: _cookie}).then(($data) =>
-					{
-						_cookie = $data.header["set-cookie"];
-						if ($data.text)
-						{
-							var $$ = cheerio.load($data.text);
-							self.saveData(self.parse($$)).then(() =>
-							{
-								clearTimeout(_timer);
-								_timer = setTimeout(() =>
-								{
-									crawlLink();
-								}, config.timeDelay)
-							}, (err) =>
-							{
-								g.log.out(err)
-								crawlLink();
-							});
-						}
-						else
-						{
-							crawlLink();
-						}
-					}, (err) =>
-					{
-						g.log.out(err);
-						crawlLink();
-					})
-				}
-				else
-				{
-					crawlLink();
-				}
-			}
-			else
-			{
+		function crawlLink() {
+			if (nodeList.length <= 1) {
 				clearTimeout(_timer);
 				$callback && $callback();
+				return;
 			}
+			node = nodeList.shift();
+			var url = $(node).find("div.img_list > a").attr("href");
+			var index = url.indexOf(".shtml")
+			if (index <= 0) {
+				crawlLink();
+				return;
+			}
+			var link = url.slice(0, index + 6);
+			_currLink = link;
+			superagent.get(link, {
+				cookie: _cookie
+			}).then(($data) => {
+				_cookie = $data.header["set-cookie"];
+				if (!$data.text) {
+					crawlLink();
+					return;
+				}
+				var $$ = cheerio.load($data.text);
+				self.saveData(self.parse($$)).then(() => {
+					clearTimeout(_timer);
+					_timer = setTimeout(() => {
+						crawlLink();
+					}, config.timeDelay)
+				}, (err) => {
+					g.log.out(err)
+					crawlLink();
+				});
+			}, (err) => {
+				g.log.out(err);
+				crawlLink();
+			})
 		}
 	}
 
-	saveData($itemData)
-	{
+	saveData($itemData) {
 		var sqlStr = _file.get("insertData.sql", $itemData);
-		var promise = new Promise((resolved, rejected) =>
-		{
-			_sql.query(sqlStr, function ($list)
-			{
+		var promise = new Promise((resolved, rejected) => {
+			_sql.query(sqlStr, function ($list) {
 				trace("done");
 				resolved();
-			}, (err) =>
-			{
+			}, (err) => {
 				trace("数据存储失败===============", err);
 				rejected();
 			});
@@ -144,8 +118,7 @@ module.exports = class {
 		return promise;
 	}
 
-	parse($$)
-	{
+	parse($$) {
 		var itemData = {};
 		itemData.title = $$("div.house-title > h1").text();
 		itemData.link = util.excludeSpecicalChar(_currLink);
@@ -156,22 +129,18 @@ module.exports = class {
 		itemData.address = util.excludeSpecicalChar($$("div.house-desc-item > ul > li:nth-child(6) > span.dz").text());
 		itemData.price = $$(" div.house-desc-item > div > span > b").text();
 		var location;
-		try
-		{
+		try {
 			var hrefStr = $$("div.view-more-detailmap.view-more > a").attr("href");
 			var strIndex = hrefStr.indexOf("?");
 			var queryStr = hrefStr.slice(strIndex + 1, hrefStr.length);
 			var queryList = queryStr.split("&");
 			var queryObj = {};
-			for (var queryItem of queryList)
-			{
+			for (var queryItem of queryList) {
 				var tmpArr = queryItem.split("=");
 				queryObj[tmpArr[0]] = tmpArr[1];
 			}
 			location = queryObj["location"];
-		}
-		catch (e)
-		{
+		} catch (e) {
 			location = "0,0"
 		}
 		itemData.lng = location.split(",")[0];
@@ -179,16 +148,10 @@ module.exports = class {
 		return itemData;
 	}
 
-	toNextPage()
-	{
+	toNextPage() {
 		_nextPage++;
-		// 这里缺少一个出口
-		if (_nextPage <= 200000)
-		{
-			this.afterLogin(config.pagePrefix + _nextPage + "/", () =>
-			{
-				this.toNextPage();
-			});
-		}
+		this.afterLogin(config.pagePrefix + _nextPage + "/", () => {
+			this.toNextPage();
+		});
 	}
 }
