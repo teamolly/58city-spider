@@ -21,7 +21,7 @@ module.exports = {
 	client: "http://hz.58.com/chuzu/",
 	server: "http://hz.58.com/chuzu/",
 	pagePrefix: "pn",
-	timeDelay: Math.random() * (5000) + 15000
+	timeDelay: Math.random() * (5000) + 5000
 }
 
 
